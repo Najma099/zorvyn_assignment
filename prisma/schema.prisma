@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+// User Table
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  password String
+  status   StatusCode @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  role      RoleCode @default(VIEWER)
+  keystores Keystore[]
+  financeRecords FinanceRecord[]
+
+  @@index([email])
+}
+
+enum RoleCode {
+  VIEWER
+  ANALYST
+  ADMIN
+}
+
+enum StatusCode {
+  ACTIVE
+  INACTIVE
+}
+
+// Keystore Table for JWT token management
+model Keystore {
+  id           Int     @id @default(autoincrement())
+  clientId     Int     @map("client_id")
+  primaryKey   String  @map("primary_key")
+  secondaryKey String  @map("secondary_key")
+  status       Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  expiresAt DateTime?
+
+  client User @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([clientId, primaryKey, status])
+  @@index([clientId, primaryKey, secondaryKey])
+  @@map("keystores")
+}
+
+model FinanceRecord {
+  id         Int      @id @default(autoincrement())
+  recordType RecordType
+  amount     Decimal  @db.Decimal(10,2)
+  notes      String?
+  category   Category
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime?
+  date      DateTime
+
+  @@index([userId])
+  @@index([userId, recordType])
+  @@index([userId, category])
+  @@index([userId, date])
+  @@index([userId, recordType, category, date])
+}
+
+enum RecordType {
+  INCOME
+  EXPENSE
+}
+
+enum Category {
+  FOOD
+  RENT
+  SALARY
+  TRAVEL
+}
