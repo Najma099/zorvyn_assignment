@@ -30,7 +30,6 @@ async function create(
     accessTokenKey: string,
     refreshTokenKey: string,
 ) {
-    // Create user and role relation in a transaction
     const result = await prisma.$transaction(async (tx: typeof prisma) => {
         // Create user
         const user = await tx.user.create({

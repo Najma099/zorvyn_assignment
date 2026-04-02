@@ -60,7 +60,7 @@ model Keystore {
 model FinanceRecord {
   id         Int      @id @default(autoincrement())
   recordType RecordType
-  amount     Decimal  @db.Decimal(10,2)
+  amount     Int
   notes      String?
   category   Category
   userId     Int
@@ -69,7 +69,7 @@ model FinanceRecord {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   deletedAt DateTime?
-  date      DateTime
+  date      DateTime @default(now())
 
   @@index([userId])
   @@index([userId, recordType])

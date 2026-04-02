@@ -7,7 +7,7 @@ import logger from '../core/logger';
 
 export const validator = (
     schema: ZodSchema,
-    source: ValidationSource,
+    source: ValidationSource = ValidationSource.BODY,
 ): RequestHandler => {
     return (req, _res, next): void => {
         const schemaToBeValidated =
@@ -18,6 +18,9 @@ export const validator = (
         if (!result.success) {
             logger.warn('Validation error', result.error);
             return next(new BadRequestError(z.prettifyError(result.error)));
+        }
+        if (source !== ValidationSource.REQUEST) {
+            Object.assign(req[source], result.data);
         }
         next();
     };

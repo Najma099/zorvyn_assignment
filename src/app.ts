@@ -9,6 +9,8 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import { generateOpenAPIDocument } from './docs/swagger';
+import rateLimit from 'express-rate-limit';
+import './routes/route.docs.js';
 
 process.on('uncaughtException', (e) => {
     logger.error(e);
@@ -51,7 +53,17 @@ if (!isProduction) {
         }),
     );
 }
+
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 100,                  // 100 requests per window
+    standardHeaders: true,     
+    legacyHeaders: false,
+    message: { message: 'Too many requests, please try again later.' },
+});
+
 // Main routes
+app.use(globalLimiter);
 app.use('/', router);
 
 app.use((_req, _res, next) => next(new NotFoundError()));

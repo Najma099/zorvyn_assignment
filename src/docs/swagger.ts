@@ -11,15 +11,6 @@ extendZodWithOpenApi(z);
 
 export const registry = new OpenAPIRegistry();
 
-// Security schemes: API Key (required for all except /health) + Bearer JWT (for protected auth)
-registry.registerComponent('securitySchemes', 'apiKey', {
-    type: 'apiKey',
-    in: 'header',
-    name: 'x-api-key',
-    description:
-        'API key for access. Required for all routes except /health. Use the Authorize button above to set it.',
-});
-
 registry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',
     scheme: 'bearer',
@@ -54,8 +45,6 @@ export function generateOpenAPIDocument() {
                     'Authentication: signup, signin, signout, token refresh.',
             },
         ],
-        // Default: use API key so "Authorize" is visible and x-api-key is sent with requests
-        security: [{ apiKey: [] }],
     });
 
     return doc;

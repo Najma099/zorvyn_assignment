@@ -24,7 +24,6 @@ const auth = z
         {
             message:
                 'Token is required either in Authorization header or in cookies',
-            // path: ['headers', 'authorization'],
         },
     );
 
