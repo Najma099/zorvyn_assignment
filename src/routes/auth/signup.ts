@@ -45,7 +45,6 @@ router.post(
 
         const userData = getUserData(createdUser);
 
-        // Set cookie for browser
         setCookies(res, tokens);
 
         new SuccessResponse('Signup successful.', {

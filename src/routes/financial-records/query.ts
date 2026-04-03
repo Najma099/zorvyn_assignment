@@ -14,11 +14,10 @@ const router = Router();
 
 router.get(
     '/',
-    authorize(RoleCode.ADMIN),
+    authorize(RoleCode.ADMIN, RoleCode.ANALYST),
     validator(schema.financialRecordFilter, ValidationSource.QUERY),
     asyncHandler(async (req: ProtectedRequest, res) => {
         const data = await RecordsRepo.filterRecords(
-            req.user.id, 
             req.query as unknown as FinancialRecordSchema['financialRecordFilter']  
         );
         new SuccessResponse('Filtered records', data).send(res);

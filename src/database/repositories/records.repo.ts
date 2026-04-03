@@ -1,23 +1,22 @@
 import { prisma } from '..';
 import { FinancialRecordSchema } from '../../routes/financial-records/schema';
 
+
 async function createRecord(userId: number, data: FinancialRecordSchema['CreateFinancialRecord']) {
     return prisma.financeRecord.create({
         data: {
         ...data,
-        userId
+        createdBy: userId
     }});
 }
 
 //Viewing records
 async function getRecords(params: {
-    userId: number;
     skip ?: number;
     take ?: number;
 }) {
     const rows = await prisma.financeRecord.findMany({
         where: {
-            userId: params.userId,
             deletedAt: null,
         },
         orderBy: {
@@ -34,13 +33,11 @@ async function getRecords(params: {
 //Updating records
 async function updateRecord(
     id: number,
-    userId: number,
     data: FinancialRecordSchema['CreateFinancialRecord'],
 ) {
     return prisma.financeRecord.update({
         where: {
             id,
-            userId,
             deletedAt: null,
         },
         data,
@@ -48,11 +45,10 @@ async function updateRecord(
 }
 
 //Deleting records
-async function deleteRecord(id: number, userId: number) {
+async function deleteRecord(id: number) {
     return prisma.financeRecord.update({
         where: {
             id,
-            userId,
             deletedAt: null,
         },
         data: {
@@ -61,11 +57,10 @@ async function deleteRecord(id: number, userId: number) {
     });
 }
 
-async function getRecordById(id: number, userId: number) {
+async function getRecordById(id: number) {
     const row = await prisma.financeRecord.findFirst({
         where: {
             id,
-            userId,
             deletedAt: null,
         },
     });
@@ -73,12 +68,11 @@ async function getRecordById(id: number, userId: number) {
     return { ...row, amount: row.amount / 100 };
 }
 
-async function filterRecords(userId: number, filters: FinancialRecordSchema['financialRecordFilter']) {
+async function filterRecords( filters: FinancialRecordSchema['financialRecordFilter']) {
     const { fromDate, toDate, recordType, category } = filters;
 
     const rows = await prisma.financeRecord.findMany({
         where: {
-            userId,
             deletedAt: null,
             ...(recordType && { recordType }),
             ...(category && { category }),

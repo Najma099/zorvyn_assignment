@@ -1,19 +1,24 @@
 import { RecordType, Category } from '@prisma/client';
 import z from 'zod';
 
-/**
- *       recordType?: RecordType;
-         amount?: Prisma.Decimal;
-         category?: Category;
-         notes?: string;
-         date?: Date;
- */
+export const CATEGORY_RECORD_TYPE_MAP = {
+    FOOD: RecordType.EXPENSE,
+    RENT: RecordType.EXPENSE,
+    TRAVEL: RecordType.EXPENSE,
+    SALARY: RecordType.INCOME,
+};
+
 const createFinancialRecord = z.object({
     amount: z.number().transform(val => Math.round(val * 100)),
     category: z.enum(Category),
     notes: z.string(),
     date: z.string().transform((val) => new Date(val)),
     recordType: z.enum(RecordType)
+}).refine( data => {
+    return CATEGORY_RECORD_TYPE_MAP[data.category] === data.recordType;
+},{
+    message: 'Category does not match record type',
+    path: ['category'],
 });
 
 const updateFinancialRecord = createFinancialRecord.partial();
@@ -33,7 +38,16 @@ const financialRecordFilter = z.object({
 
     return true;
 }, 
-{ message: 'fromDate must be before toDate' });
+{ message: 'fromDate must be before toDate' })
+.refine(data => {
+    if (data.category && data.recordType) {
+        return CATEGORY_RECORD_TYPE_MAP[data.category] === data.recordType;
+    }
+    return true;
+},{
+    message: 'Category does not match record type',
+    path: ['category'],
+});
 
 const paginationParams = z.object({
     skip: z.coerce.number().int().min(0).default(0),

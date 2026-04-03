@@ -13,11 +13,12 @@ import { BadRequestError } from '../../core/api-error';
 
 const router = Router();
 
-const checkById = async (id: number, userId: number) => {
-    const record = await RecordsRepo.getRecordById(id, userId);
+const checkById = async (id: number) => {
+    const record = await RecordsRepo.getRecordById(id);
     if (!record) 
         throw new BadRequestError('Record does not exists.');
 }
+
 router.post(
     '/',
     authorize(RoleCode.ADMIN),
@@ -29,7 +30,6 @@ router.post(
     }),
 );
 
-
 router.get(
     '/',
     authorize(RoleCode.ADMIN, RoleCode.ANALYST, RoleCode.VIEWER),
@@ -37,9 +37,8 @@ router.get(
     asyncHandler(async (req: ProtectedRequest, res) => {
         const { skip, take } = req.query as unknown as FinancialRecordSchema['PaginationParams'];
         const records = await RecordsRepo.getRecords({
-            userId: req.user.id,
             skip: Number(skip),
-            take:  Number(take)
+            take: Number(take)
         });
         new SuccessResponse('Records fetched', records).send(res);
     }),
@@ -52,11 +51,10 @@ router.put(
     validator(schema.recordId, ValidationSource.PARAM),
     validator(schema.updateFinancialRecord),
     asyncHandler(async (req: ProtectedRequest, res) => {
-        await checkById(Number(req.params.id), req.user.id);
+        await checkById(Number(req.params.id));
 
         const updated = await RecordsRepo.updateRecord(
             Number(req.params.id),
-            req.user.id,
             req.body
         );
         new SuccessResponse('Record updated', updated).send(res);
@@ -69,11 +67,10 @@ router.delete(
     authorize(RoleCode.ADMIN),
     validator(schema.recordId, ValidationSource.PARAM),
     asyncHandler(async (req: ProtectedRequest, res) => {
-        await checkById(Number(req.params.id), req.user.id);
+        await checkById(Number(req.params.id));
 
         await RecordsRepo.deleteRecord(
             Number(req.params.id),
-            req.user.id,
         );
         new SuccessResponse('Record deleted', null).send(res);
     }),

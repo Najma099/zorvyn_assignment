@@ -21,7 +21,7 @@ model User {
 
   role      RoleCode @default(VIEWER)
   keystores Keystore[]
-  financeRecords FinanceRecord[]
+  createdRecords FinanceRecord[]
 
   @@index([email])
 }
@@ -63,19 +63,19 @@ model FinanceRecord {
   amount     Int
   notes      String?
   category   Category
-  userId     Int
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdBy     Int?
+  user  User?     @relation(fields: [createdBy], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   deletedAt DateTime?
   date      DateTime @default(now())
 
-  @@index([userId])
-  @@index([userId, recordType])
-  @@index([userId, category])
-  @@index([userId, date])
-  @@index([userId, recordType, category, date])
+  @@index([createdBy])
+  @@index([createdBy, recordType])
+  @@index([createdBy, category])
+  @@index([createdBy, date])
+  @@index([createdBy, recordType, category, date])
 }
 
 enum RecordType {

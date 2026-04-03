@@ -121,7 +121,7 @@ registry.registerPath({
     path: '/records/filter',
     summary: 'Filter Finance Records',
     description:
-        'Returns finance records filtered by date range, category, or record type. Supports pagination via skip and take. Requires API key and Bearer JWT. Allowed roles: ADMIN',
+        'Returns finance records filtered by amount range, category, or record type. Supports pagination via skip and take. Requires API key and Bearer JWT. Allowed roles: ADMIN, ANALYST',
     tags: ['Records'],
     security: [{ apiKey: [], bearerAuth: [] }],
     request: {
