@@ -7,6 +7,9 @@ export const prisma =
     globalForPrisma.prisma ||
     new PrismaClient({
         log: ['query', 'error', 'warn'],
+        ...(process.env.NODE_ENV === 'test' && {
+            datasourceUrl: "postgresql://postgres:123456@localhost:5432/postgres"
+        })
     });
 
 if (process.env.NODE_ENV !== 'production') {
