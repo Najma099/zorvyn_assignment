@@ -21,8 +21,8 @@ export const tokenInfo = {
     ),
     issuer: process.env.TOKEN_ISSUER || '',
     audience: process.env.TOKEN_AUDIENCE || '',
-    jwtPrivateKey: process.env.JWT_PRIVATE_KEY || '',
-    jwtPublicKey: process.env.JWT_PUBLIC_KEY || '',
+    jwtPrivateKey: process.env.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+    jwtPublicKey: process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n') || '',
 };
 
 // Cookie options

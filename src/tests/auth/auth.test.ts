@@ -3,7 +3,9 @@ import { app } from "../../app";
 import { prisma } from "../../database";
 import { signupAndGetTokens } from "../helpers/auth.helpers";
 import { describe, expect, it, beforeAll, afterAll } from "vitest";
+import { tokenInfo } from "../../config";
 
+console.log(tokenInfo);
 
 beforeAll(async () => {
   await prisma.keystore.deleteMany();
