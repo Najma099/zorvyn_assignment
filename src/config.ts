@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 import { CookieOptions } from 'express';
 
-dotenv.config();
+if (process.env.NODE_ENV === 'development')
+    dotenv.config();
 
 export const originUrl = process.env.ORIGIN_URL;
 export const isProduction = process.env.NODE_ENV === 'production';
@@ -21,8 +22,8 @@ export const tokenInfo = {
     ),
     issuer: process.env.TOKEN_ISSUER || '',
     audience: process.env.TOKEN_AUDIENCE || '',
-    jwtPrivateKey: process.env.JWT_PRIVATE_KEY || '',
-    jwtPublicKey: process.env.JWT_PUBLIC_KEY || '',
+    jwtPrivateKey: process.env.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+    jwtPublicKey: process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n') || '',
 };
 
 // Cookie options

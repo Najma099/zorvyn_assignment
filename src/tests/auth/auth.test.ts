@@ -2,13 +2,7 @@ import request from "supertest";
 import { app } from "../../app";
 import { prisma } from "../../database";
 import { signupAndGetTokens } from "../helpers/auth.helpers";
-import { describe, expect, it, beforeAll, afterAll } from "vitest";
-
-
-beforeAll(async () => {
-  await prisma.keystore.deleteMany();
-  await prisma.user.deleteMany();
-});
+import { describe, expect, it, afterAll } from "vitest";
 
 afterAll(async () => {
   await prisma.$disconnect();
