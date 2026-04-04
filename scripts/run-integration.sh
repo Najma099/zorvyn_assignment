@@ -1,3 +1,4 @@
+echo "Running integration test"
 docker-compose up -d
 
 echo 'Waiting for database to ready...'
@@ -9,5 +10,5 @@ export NODE_ENV="test"
 
 npx prisma migrate dev --name init
 npx vitest
-
-docker-compose down 
+echo "Cleaning up..."
+docker-compose down
