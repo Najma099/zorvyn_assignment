@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 import { CookieOptions } from 'express';
 
-dotenv.config();
+if (process.env.NODE_ENV === 'development')
+    dotenv.config();
 
 export const originUrl = process.env.ORIGIN_URL;
 export const isProduction = process.env.NODE_ENV === 'production';

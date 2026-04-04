@@ -10,15 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      DATABASE_URL: postgresql://postgres:123456@localhost:5432/postgres
-      NODE_ENV: test
-      ACCESS_TOKEN_VALIDITY_SEC: 172800
-      REFRESH_TOKEN_VALIDITY_SEC: 604800
-      JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-      JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
-      COOKIE_MAX_AGE_SEC: 120
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
