@@ -1,5 +1,5 @@
-name: Running Unit Tests
- 
+name: Running Integration Tests
+
 on:
   pull_request:
     branches:
@@ -7,8 +7,17 @@ on:
       - develop
 
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: postgresql://postgres:123456@localhost:5432/postgres
+      NODE_ENV: test
+    ACCESS_TOKEN_VALIDITY_SEC: 172800
+    REFRESH_TOKEN_VALIDITY_SEC: 604800
+    JWT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDMT6Ce2k7eI4BA\nQX42aktQjYMNcA7PwOL4htpqm7XGg2IE8G1ZOxBkMaI5kobXyjJDovPIxChs/m3M\nlr3pZOQj1Y9+ODJLEMl+8jqudzEoAf75dvniajvcUZWHert8D4flK+5sdXDmUKiU\nDT0k7nl73rhFFTh4AJw+O5h/nl4hdJi1WUrWuxv628dyuJQ5zhdBNgoit0uM4DY9\nxHAMxhInlA4zb/alwpQztFVs1BsHRd2KoRroz2eLkbaaUMDn5TFAEd4BhxKD+tPI\n/2c8km0qF1aRSuUVQc8aCfF4/TchDweWRZrc7e3wu5iNnSA17sSjBe3RSL2cOIZA\nXG4hcB4BAgMBAAECggEAAYd1CctTfMkiPBjhY3HfN26ftPmKOtbUPAzyVIruzNoN\n4UCVaO4OvNk8QBcPKE1MnAH7thx1uv8afkYAjN8i7/u4s7ai9bnd8DPK6aRdu1Fs\ngZx42U93PDpmFpn+DjslhrsR8UDdw/OFl3oT45NfWGR915KFlixW/wY+KXJbfP+Z\neF3qxY/7sXDAPwhPyHNkTb+7fsQja7rs3p9URYxB/VB7GQMyuDKke5a65YamWLJi\nPxqb8BsNJtE1pQ6UPsheVcNjdot5VWtRKl8RZb+urna/sBr6YuT2Wll08yt5qqn0\nuuD6OjKBZmt+mxP1KLPCgKz6+rejAHoQ/MKePk6S8wKBgQD1pcFmei+197xNxBoE\ncJogtyDLamW6K71xn0y2Dc+ZN7xOcKvL4xgdaMgpC8kNeglw8mO2LNSV2mYmrh1C\nMp8UJoVCCxlR1UC+GTpRKrkcv9dle+rNP+0BTbP4Iii65TXfgbR02ggFYj9ySHg/\nAQSusHeUuN6c/YXhOhjhYuVPiwKBgQDU6+ahC4Oyg0hZLOSYQrfgBgTwLB1HVf60\nJ13ybVUuQ+MEIqT97g6T5jZLCdvi1amIyNp37t9IwfGmOdmRTus9IQAYeXZtfhwp\nKP5bUb3zLTjRD88BMk+3dDszNK7+HkvFyQqzGTgPN6QQDQFEBsRmngOywwVIfLzX\nOA1Ewkp6IwKBgC9evYLjgRvYICnm7RV6GV7BscNIS0GxeaDVlVduJmBnjRqbQ6XX\nryjMsfyoVycQJ43uUCgrUPts2FIRNXc0h9S88Omhdkp/kzKVbteEI5pVrFXXpZna\n//tGXrQ08iHIXbEyM/hsqytOnOmO7BFKQvrk8MpvNA6WHSEnsPCVv56tAoGAKbCG\n18GJZ8qMv+kqWSW3GwYSsXPxx6Xu2RdcLbt6kjR4nrap145lDFBnEQo9I4zyRPYO\n0KzUy0ouJn3tO6ZYKP/tJN2jcozetrBwHTFEH/kaxtRxk6pmMWVwsfX+zYLhEzjp\n/2dQsqoSVZI2TTuF+RG3Z6kHv8msr/cpoezo6EECgYALMxYAYCqdJEhKT2woCEjC\nnkJndokBrf1qpBs3kc1GWbtFs48pNC0WZUJSzeLvAOYBz98SQNyvuh5O2m3u19Oy\n3+9CHFKXhxL7w8dnPapaDlvGx0d0wVAXJpP+CRubQRxHmVHNEhEhSsvbq+Nk1Cka\nmaMH18txFNTr3JSFlrdPRA==\n-----END PRIVATE KEY-----\n"
+    JWT_PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzE+gntpO3iOAQEF+NmpL\nUI2DDXAOz8Di+Ibaapu1xoNiBPBtWTsQZDGiOZKG18oyQ6LzyMQobP5tzJa96WTk\nI9WPfjgySxDJfvI6rncxKAH++Xb54mo73FGVh3q7fA+H5SvubHVw5lColA09JO55\ne964RRU4eACcPjuYf55eIXSYtVlK1rsb+tvHcriUOc4XQTYKIrdLjOA2PcRwDMYS\nJ5QOM2/2pcKUM7RVbNQbB0XdiqEa6M9ni5G2mlDA5+UxQBHeAYcSg/rTyP9nPJJt\nKhdWkUrlFUHPGgnxeP03IQ8HlkWa3O3t8LuYjZ0gNe7EowXt0Ui9nDiGQFxuIXAe\nAQIDAQAB\n-----END PUBLIC KEY-----\n"
+    COOKIE_MAX_AGE_SEC: 120
 
     steps:
       - name: Checkout code
@@ -17,11 +26,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm run test
+      # ✅ Use modern docker command
+      - name: Run integration tests
+        run: npm run dev
