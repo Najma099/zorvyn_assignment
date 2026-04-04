@@ -18,6 +18,15 @@ async function updateRole(id: number, role: RoleCode) {
         data: {
            role 
         },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+        }
     });
 }
 
@@ -36,6 +45,15 @@ async function updateStatus(id: number, status: StatusCode) {
         },
         data: {
            status
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
         }
     })
 }
