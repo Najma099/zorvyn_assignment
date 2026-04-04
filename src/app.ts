@@ -1,7 +1,7 @@
 import logger from './core/logger.js';
 import express from 'express';
 import cors from 'cors';
-import { isProduction, originUrl } from './config.js';
+import { originUrl } from './config.js';
 import router from './routes/index.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { NotFoundError } from './core/api-error.js';
@@ -39,25 +39,23 @@ app.use(cookieParser());
 // Adds security header, express best security practice
 app.use(helmet());
 
-if (!isProduction) {
-    app.use(
-        '/api-docs',
-        swaggerUi.serve,
-        swaggerUi.setup(generateOpenAPIDocument(), {
-            swaggerOptions: {
-                persistAuthorization: true,
-                tryItOutEnabled: true,
-                displayRequestDuration: true,
-            },
-            customCss: '.swagger-ui .topbar { display: none }',
-        }),
-    );
-}
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(generateOpenAPIDocument(), {
+        swaggerOptions: {
+            persistAuthorization: true,
+            tryItOutEnabled: true,
+            displayRequestDuration: true,
+        },
+        customCss: '.swagger-ui .topbar { display: none }',
+    }),
+);
 
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 100,                  // 100 requests per window
-    standardHeaders: true,     
+    windowMs: 15 * 60 * 1000,
+    max: 100, // 100 requests per window
+    standardHeaders: true,
     legacyHeaders: false,
     message: { message: 'Too many requests, please try again later.' },
 });
