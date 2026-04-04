@@ -14,6 +14,7 @@ export const serverUrl =
     process.env.SERVER_URL ||
     (port ? `http://localhost:${port}` : 'http://localhost:9090');
 
+    
 // JWT token configuration
 export const tokenInfo = {
     accessTokenValidity: parseInt(process.env.ACCESS_TOKEN_VALIDITY_SEC || '0'),

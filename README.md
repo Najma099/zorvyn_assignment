@@ -1,104 +1,110 @@
-- Add FinanceRecord model with Int amount (paise) for precision
-- Implement records CRUD with soft delete (createRecord, getRecords, updateRecord, deleteRecord)
-- Implement dashboard analytics (totalIncome, totalExpenses, netBalance, categorySummary, recentActivity, monthlyTrends, weeklyTrends, highestExpense, averageSpending)
-- Add paise/rupee conversion consistently across all repo functions
-- Add Zod validation schemas for all routes with proper coercion
-- Add pagination (skip/take) with bounds validation on record listing
-- Add date range, category, and type filtering on records
-- Add role-based authorization (VIEWER, ANALYST, ADMIN)
-- Add rate limiting (global 100/15min, auth 10/15min)
-- Add Swagger documentation for all dashboard and records endpoints
-- Fix BigInt handling from raw SQL SUM queries
-- Add composite indexes for query performance
+# Database Schema
 
+Built with **Prisma ORM** on **PostgreSQL**. Designed for multi-session auth, soft deletes, and fast analytics queries.
 
+---
 
+## Table of Contents
 
+- [User](#-user)
+- [Keystore](#-keystore)
+- [FinanceRecord](#-financerecord)
+- [Enums](#-enums)
+- [Index Strategy](#-index-strategy)
+- [Design Assumptions](#-design-assumptions)
 
-Let's start with Schema first:
+---
 
+## ◆ User
 
-// User Table we decided to keep the structure easy and simple id, emaal, n passowrd we r stroing hashed password n also using deltedAt for soft delete , a user can have multiple keystore value, suppose he is lloging in via multiple session
-model User {
-  id       Int     @id @default(autoincrement())
-  name     String
-  email    String  @unique
-  password String
-  status   StatusCode @default(ACTIVE)
+Stores core identity, credentials, and role assignment.
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime?
+| Field | Type | Notes |
+|---|---|---|
+| `id` | Int | Auto-increment primary key |
+| `name` | String | Display name |
+| `email` | String | Unique, indexed for fast login lookup |
+| `password` | String | bcrypt hash — never plain text |
+| `role` | RoleCode | Defaults to `VIEWER` on signup |
+| `status` | StatusCode | Defaults to `ACTIVE`; toggle without deleting |
+| `deletedAt` | DateTime? | Null = active; timestamp = soft deleted |
 
-  role      RoleCode @default(VIEWER)
-  keystores Keystore[]
-  createdRecords FinanceRecord[]
+Each user can have multiple active sessions via the `Keystore` relation.
 
-  @@index([email])
-}
+---
 
-enum RoleCode {
-  VIEWER
-  ANALYST
-  ADMIN
-}
+## ◈ Keystore
 
-enum StatusCode {
-  ACTIVE
-  INACTIVE
-}
+Manages JWT session keys for revocable multi-session auth. No actual tokens are stored — only the keys embedded inside them.
 
-// Keystore Table for JWT token management this is very esstential for multiple sesson management so that user can loged out from one session without effecting  the other what we r trying to do where is whereever a new session is created for user we create two pair of key primary key n secondary key n then embed those key into access token n refresh token --> when a request is done from refresh token we bring out the primary key n see if primary key exists in our db if not it means the session is already deleted if teh primary key exits we very the token n allow the request if its valid .... there by aciving our goal of session management, n also not storing the token into the db to protect it from tamper
+| Field | Type | Notes |
+|---|---|---|
+| `clientId` | Int | FK to User; cascades on delete |
+| `primaryKey` | String | Embedded in the access token; checked on every request |
+| `secondaryKey` | String | Embedded in the refresh token; used only during renewal |
+| `status` | Boolean | `false` = session revoked instantly |
+| `expiresAt` | DateTime? | Optional hard expiry for the session |
 
-model Keystore {
-  id           Int     @id @default(autoincrement())
-  clientId     Int     @map("client_id")
-  primaryKey   String  @map("primary_key")
-  secondaryKey String  @map("secondary_key")
-  status       Boolean @default(true)
+**How revocation works:** Setting `status = false` on a row immediately blocks any request using the associated tokens — no token blacklist needed.
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-  expiresAt DateTime?
+---
 
-  client User @relation(fields: [clientId], references: [id], onDelete: Cascade)
+## ◎ FinanceRecord
 
-  @@index([clientId])
-  @@index([clientId, primaryKey, status])
-  @@index([clientId, primaryKey, secondaryKey])
-  @@map("keystores")
-}
+Stores income and expense entries with soft delete support and analytics-optimized indexes.
 
-//we decided to store the amount is paisa rather in rupees to make care of the decimal value while receiving the data we receive it in rupess but store it in paisa for precision we r doing operation 
-model FinanceRecord {
-  id         Int      @id @default(autoincrement())
-  recordType RecordType
-  amount     Int
-  notes      String?
-  category   Category
-  createdBy     Int?
-  user  User?     @relation(fields: [createdBy], references: [id])
+| Field | Type | Notes |
+|---|---|---|
+| `recordType` | RecordType | `INCOME` or `EXPENSE` |
+| `amount` | Int | Stored in **paise**; API responses convert to rupees |
+| `category` | Category | FOOD, RENT, SALARY, TRAVEL |
+| `notes` | String? | Optional free-text context |
+| `date` | DateTime | Defaults to now; supports backdating |
+| `createdBy` | Int? | Nullable FK to User — record survives if user is deleted |
+| `deletedAt` | DateTime? | Soft delete; excluded from queries but retained for history |
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  deletedAt DateTime?
-  date      DateTime @default(now())
+---
 
-  @@index([createdBy])
-  @@index([createdBy, recordType])
-  @@index([createdBy, category])
-  @@index([createdBy, date])
-  @@index([createdBy, recordType, category, date])
-}
+## ▸ Enums
 
-enum RecordType {
-  INCOME
-  EXPENSE
-}
+**RoleCode** — Controls what a user can do across the organization.
 
-enum Category {
-  FOOD
-  RENT
-  SALARY
-  TRAVEL
-}
+| Value | Access |
+|---|---|
+| `VIEWER` | Read records + dashboard |
+| `ANALYST` | Read records + dashboard |
+| `ADMIN` | Full access — create, update, delete, manage users |
+
+**StatusCode** — `ACTIVE` (can authenticate) · `INACTIVE` (blocked)
+
+**RecordType** — `INCOME` · `EXPENSE`
+
+**Category** — `FOOD` · `RENT` · `SALARY` · `TRAVEL`
+
+> Categories can be extended in the enum as new types are needed.
+
+---
+
+## ⚡ Index Strategy
+
+Indexes are chosen to cover the most frequent query patterns — token validation, filtered listings, and analytics aggregations.
+
+| Index | Purpose |
+|---|---|
+| `User(email)` | Fast lookup during login |
+| `Keystore(clientId, primaryKey, status)` | Access token validation on every request |
+| `Keystore(clientId, primaryKey, secondaryKey)` | Refresh token validation |
+| `FinanceRecord(createdBy, recordType)` | Filter by INCOME / EXPENSE |
+| `FinanceRecord(createdBy, category)` | Filter by category |
+| `FinanceRecord(createdBy, date)` | Date-range queries for trends |
+| `FinanceRecord(createdBy, recordType, category, date)` | Composite for complex dashboard analytics |
+
+---
+
+## ⌬ Design Assumptions
+
+- **Single organization** — No tenant isolation; all records share a workspace.
+- **Organization-wide roles** — Permissions are global, not scoped per record.
+- **Multi-session** — A user can be signed in on multiple devices; each gets its own keystore row.
+- **Soft deletes everywhere** — Users and records are never hard-deleted, preserving history and referential integrity.
+- **Paise as source of truth** — All monetary values stored as integers in paise; rupee conversion happens at the API layer only.
