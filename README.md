@@ -144,7 +144,7 @@ Access is enforced organization-wide via middleware — not scoped per user or r
 
 | Endpoint | Method | ADMIN | ANALYST | VIEWER |
 |---|---|:---:|:---:|:---:|
-| `/auth/signup` | POST | ✓ | ✗ | ✗ |
+| `/auth/signup` | POST | ✓ | ✓ | ✓ |
 | `/auth/signin` | POST | ✓ | ✓ | ✓ |
 | `/auth/signout` | POST | ✓ | ✓ | ✓ |
 | `/auth/token/refresh` | POST | ✓ | ✓ | ✓ |
